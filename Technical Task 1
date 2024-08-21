@@ -1,0 +1,31 @@
+Identify Key Metrics to Monitor:-
+CPU Usage: Check how much CPU is being consumed by the proxy server. High CPU usage could indicate inefficiencies in processing requests.
+Memory Usage: Monitor the amount of RAM being used. High memory usage may lead to slow performance or crashes.
+Disk I/O: Track disk read/write operations, which can indicate how much data the server is processing.
+Network Traffic: Monitor incoming and outgoing network traffic to understand the load on the proxy server.
+Latency and Response Times: Measure how long it takes for the proxy server to respond to requests.
+
+Setting Up Monitoring:-
+Install Monitoring Tools: Ensure that the necessary tools (like Prometheus, Grafana, etc.) are installed on your proxy server.
+Configure Monitoring Scripts: Write scripts to capture metrics regularly or use existing monitoring services.
+Set Thresholds and Alerts: Define thresholds for metrics (e.g., CPU usage > 80%) and configure alerts to notify you of potential issues.
+
+Analyzing Data:-
+Baseline Performance: Establish a baseline for what normal performance looks like.
+Detect Anomalies: Look for spikes in resource usage, unusual traffic patterns, or slow response times.
+Performance Tuning: Adjust server configurations based on monitoring data (e.g., increase resources, tweak server settings).
+
+Automating Monitoring:-
+Automation Scripts: Use cron jobs or other automation tools to regularly check system resources and alert you if something goes wrong.
+Integration with CI/CD: Integrate monitoring into your CI/CD pipeline to catch issues early during deployment.
+
+Linux commands for Monitoring System Resources for a Proxy Server:-
+CPU and Memory Monitoring:-
+top -b -n 1 | grep "Cpu(s)" | awk '{print $2 + $4}'  # CPU Usage
+free -m | awk 'NR==2{printf "Memory Usage: %s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }'
+
+Disk I/O monitoring:-
+iostat -dx 1
+
+Network Traffic Monitoring:
+iftop -i eth0  # Replace eth0 with your network interface
