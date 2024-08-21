@@ -1,0 +1,94 @@
+1. Define the Scope of the Script:-
+Security Audits: Check for common vulnerabilities, misconfigurations, and compliance with security best practices.
+Server Hardening: Implement measures to protect the server from attacks, such as disabling unnecessary services, securing SSH access, and ensuring proper file permissions.
+
+2. Prerequisites:-
+Ensure you have root or sudo privileges on the server.
+Install necessary tools like Lynis, Fail2ban, UFW/iptables, etc.
+
+#!/bin/bash
+# Script for Automating Security Audits and Server Hardening on Linux Servers
+
+# Update the system
+echo "Updating the system..."
+sudo apt-get update -y && sudo apt-get upgrade -y
+
+# Install Lynis for security auditing
+echo "Installing Lynis..."
+sudo apt-get install lynis -y
+
+# Run a security audit with Lynis
+echo "Running security audit with Lynis..."
+sudo lynis audit system --quiet
+
+# Check for open ports and close unnecessary ones
+echo "Checking for open ports..."
+sudo netstat -tuln
+
+# Enable UFW (Uncomplicated Firewall) and allow only necessary services
+echo "Configuring UFW..."
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow ssh
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw enable
+
+# Disable root login via SSH
+echo "Disabling root login via SSH..."
+sudo sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
+sudo systemctl restart sshd
+
+# Set up SSH key-based authentication
+echo "Setting up SSH key-based authentication..."
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+echo "Please add your public SSH key to ~/.ssh/authorized_keys"
+chmod 600 ~/.ssh/authorized_keys
+
+# Install Fail2Ban to protect against brute-force attacks
+echo "Installing Fail2Ban..."
+sudo apt-get install fail2ban -y
+
+# Configure Fail2Ban for SSH
+echo "Configuring Fail2Ban..."
+sudo bash -c 'cat << EOF > /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+port = ssh
+logpath = /var/log/auth.log
+bantime = 3600
+maxretry = 3
+EOF'
+sudo systemctl restart fail2ban
+
+# Ensure important files have the correct permissions
+echo "Setting file permissions..."
+sudo chmod 600 /etc/passwd /etc/shadow
+sudo chmod 700 /root
+sudo chmod 700 /home/*
+
+# Disable unnecessary services
+echo "Disabling unnecessary services..."
+sudo systemctl disable telnet
+sudo systemctl disable ftp
+sudo systemctl disable rsh
+sudo systemctl disable rexec
+sudo systemctl disable tftp
+sudo systemctl disable rsync
+
+# Install and run ClamAV for malware scanning
+echo "Installing ClamAV..."
+sudo apt-get install clamav -y
+echo "Running malware scan with ClamAV..."
+sudo freshclam
+sudo clamscan -r / --quiet
+
+# Check for security updates and apply them
+echo "Checking for security updates..."
+sudo apt-get install unattended-upgrades -y
+sudo dpkg-reconfigure --priority=low unattended-upgrades
+
+# Reboot the system if necessary
+echo "System hardening complete. Rebooting the server..."
+sudo reboot
